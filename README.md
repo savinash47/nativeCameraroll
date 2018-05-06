@@ -2,7 +2,7 @@
 
 - This project shows an example of how we can access camera and photos in react native apps.
 
-- Uses react native CameraRoll api to access photos and react-native-camera package for photos.
+- Uses react native CameraRoll api to access photos and react-native-camera package for accessing camera.
 
 - It can be easily used in any project by just updating the styles as per your needs.
 
