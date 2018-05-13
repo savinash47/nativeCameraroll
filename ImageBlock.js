@@ -14,7 +14,8 @@ export default class ImageBlock extends Component {
     this.onClickImage = this.onClickImage.bind(this);
     this.state = {
       borderColor: '#CCC',
-      selected: selected
+      selected: selected,
+      borderWidth: 1
     }
   }
 
@@ -23,13 +24,15 @@ export default class ImageBlock extends Component {
       //unselect
       this.setState({
         borderColor: '#CCC',
-        selected: false
+        selected: false,
+        borderWidth: 1
       })
       this.props.onClickImage(Object.assign(this.props.image, {index: this.props.index}), false);
     } else {
       this.setState({
-        borderColor: 'blue',
-        selected: true
+        borderColor: '#33b6e6',
+        selected: true,
+        borderWidth: 2
       })
       this.props.onClickImage(Object.assign(this.props.image, {index: this.props.index}), true);
     }
@@ -38,13 +41,12 @@ export default class ImageBlock extends Component {
 
   render() {
     return (
-      <TouchableOpacity onPress={this.onClickImage}>
+      <TouchableOpacity key={this.props.index} onPress={this.onClickImage}>
         <View style={[{position: 'relative'}, this.props.style]}>
-
           {this.state.selected ?
             <Icon style={styles.iconStyle} type="MaterialIcons" name="check-circle" />
           : ''}
-          <Image style={[this.props.style,{borderColor:  this.state.borderColor, borderWidth: 1}]} source={{uri: this.props.image.node.image.uri }} />
+          <Image style={[this.props.style,{borderColor:  this.state.borderColor, borderWidth: this.state.borderWidth}]} source={{uri: this.props.image.node.image.uri }} />
         </View>
       </TouchableOpacity>
     );
@@ -58,6 +60,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     fontSize: 20,
     zIndex: 5,
-    color: 'blue'
+    color: '#33b6e6'
   }
 })

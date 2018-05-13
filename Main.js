@@ -4,6 +4,7 @@ import { StackNavigator } from 'react-navigation';
 import App from './App';
 import SelectPhotos from './SelectPhotos';
 import Camera from './Camera';
+import CameraPreview from './CameraPreview'
 
 const RootStack = StackNavigator(
   {
@@ -15,6 +16,9 @@ const RootStack = StackNavigator(
     },
     Camera: {
       screen: Camera
+    },
+    CameraPreview: {
+      screen: CameraPreview
     }
   },
   {

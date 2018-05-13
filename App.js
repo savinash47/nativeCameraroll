@@ -38,7 +38,10 @@ export default class App extends Component {
       height: height,
       imagesBlockHeight: imagesBlockHeight,
       imagesDisplayHeight: imagesDisplayHeight,
-      imagesHeight: imagesHeight
+      imagesHeight: imagesHeight,
+      hasNextPage: false,
+      endCursor: ''
+
     };
     this.hidePhotosBlock = this.hidePhotosBlock.bind(this);
     this.onClickImage = this.onClickImage.bind(this);
@@ -46,6 +49,7 @@ export default class App extends Component {
     this.isSelected = this.isSelected.bind(this);
     this.getSelectedImages = this.getSelectedImages.bind(this);
     this.goToCamera = this.goToCamera.bind(this);
+    this.scrollFetchImages = this.scrollFetchImages.bind(this);
   }
 
   componentDidMount(){
@@ -85,7 +89,8 @@ export default class App extends Component {
       assetType: 'Photos'
     })
     .then(r => {
-      this.setState({images: r.edges, showPhotoBlock: true});
+      this.setState({images: r.edges, showPhotoBlock: true, hasNextPage:
+        r.page_info.has_next_page, endCursor: r.page_info.end_cursor});
     })
   }
 
@@ -96,18 +101,16 @@ export default class App extends Component {
   }
 
   onClickImage(image, selected) {
-    let selectedImages = this.state.selectedImages;
     if (selected) {
       //add image to selected images list
-      selectedImages.push(image);
       this.setState({
-        selectedImages: selectedImages
+        selectedImages: [...this.state.selectedImages,image]
       });
     } else {
       //remove image from selected images list
-      var removedImages = this.state.selectedImages.filter(imageAdded => imageAdded.index !== image.index);
+      var retrievedImages = this.state.selectedImages.filter(imageAdded => imageAdded.index !== image.index);
       this.setState({
-        selectedImages: removedImages,
+        selectedImages: retrievedImages,
       });
     }
   }
@@ -130,18 +133,47 @@ export default class App extends Component {
       this.props.navigation.navigate('Camera');
   }
 
+  scrollFetchImages() {
+    if (this.state.hasNextPage) {
+      CameraRoll.getPhotos({
+        first: 20,
+        after: this.state.endCursor,
+        assetType: 'Photos'
+      })
+      .then(r => {
+        this.setState({images: [...this.state.images,...r.edges], hasNextPage: r.page_info.has_next_page, endCursor: r.page_info.end_cursor});
+      })
+    }
+  }
+
+  removeImage(index) {
+    var retrievedImages = this.state.selectedImages.filter(imageAdded => imageAdded.index !== index);
+    this.setState({
+      selectedImages: retrievedImages,
+    });
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <View>
-        {this.state.selectedImages.map((imageObj,index) => {
-          return <Image key={index} style={{width: 50, height: 70}} source={{uri: imageObj.node.image.uri }} />
-        })}
-      </View>
+        <View style={{alignItems: 'center',justifyContent: 'center'}}>
           <TouchableOpacity onPress={this.getSelectedImages}>
-            <View><Text>Photos</Text></View>
+            <Icon type="FontAwesome" name="camera" />
           </TouchableOpacity>
-
+        </View>
+        <View style={{flexDirection: 'row',marginTop: 15}}>
+          {this.state.selectedImages.map((imageObj,index) => {
+            return (<View key={index} style={{marginRight: 5}}>
+                      <Image style={{width: 50, height: 70}} source={{uri: imageObj.node.image.uri }} />
+                      {!this.state.showPhotoBlock ?
+                        <TouchableOpacity onPress={() => this.removeImage(imageObj.index)}
+                          style={{alignSelf: 'flex-end',position: 'absolute', top: -10,right: -5}}>
+                          <Text style={{fontSize: 18}}>X</Text>
+                        </TouchableOpacity>
+                        : ''}
+                    </View>)
+          })}
+        </View>
         {this.state.showPhotoBlock ?
           <View style={[styles.photosBlock,{ height: this.state.imagesBlockHeight}]}>
 
@@ -151,7 +183,7 @@ export default class App extends Component {
                       <Text style={{textAlign: 'center', color: 'black',fontSize: 18}}>Add Photos</Text>
                     </TouchableOpacity>
                 </View>
-                <ScrollView horizontal={true}>
+                <ScrollView horizontal={true} onMomentumScrollEnd={this.scrollFetchImages} scrollEventThrottle={50}>
                   <View style={[styles.cameraExplorer, {height: this.state.imagesDisplayHeight}]}>
                     <TouchableOpacity onPress={this.goToCamera} style={[styles.cameraPhotoBlk, {height: this.state.imagesHeight}]}>
                       <Icon name="photo-camera" type="MaterialIcons" />
@@ -160,6 +192,7 @@ export default class App extends Component {
                       <Icon name="photo-album" type="MaterialIcons" />
                     </TouchableOpacity>
                   </View>
+
                   <View style={[styles.imagesDisplay,{height: this.state.imagesDisplayHeight}]}>
                     {this.state.images.map((p, i) => {
                       return (<ImageBlock index={i} selected={this.isSelected} onClickImage={this.onClickImage} key={i} style={[styles.imgOption, {height: this.state.imagesHeight}]} image={p} />)
@@ -168,7 +201,7 @@ export default class App extends Component {
                 </ScrollView>
                 <View style={styles.imgBlkFooter}>
                   <TouchableOpacity style={{width: '100%'}} onPress={this.hidePhotosBlock}>
-                    <Text style={{textAlign: 'center', color: 'blue',fontSize: 16}}>Done</Text>
+                    <Text style={{textAlign: 'center', fontWeight: '700',fontSize: 16}}>Done</Text>
                   </TouchableOpacity>
                 </View>
             </View>
@@ -182,8 +215,9 @@ export default class App extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: 30,
+    // justifyContent: 'center',
+    // alignItems: 'center',
     backgroundColor: '#FFF',
   },
   photosBlock: {
