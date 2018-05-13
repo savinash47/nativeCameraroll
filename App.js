@@ -41,7 +41,6 @@ export default class App extends Component {
       imagesHeight: imagesHeight,
       hasNextPage: false,
       endCursor: ''
-
     };
     this.hidePhotosBlock = this.hidePhotosBlock.bind(this);
     this.onClickImage = this.onClickImage.bind(this);
@@ -54,10 +53,11 @@ export default class App extends Component {
 
   componentDidMount(){
     if (this.props.navigation.state.params && this.props.navigation.state.params.selectedImages) {
+      console.log(this.state.selectedImages);
       let selectedImages = [...this.state.selectedImages, ...this.props.navigation.state.params.selectedImages];
       this.setState({
-        selectedImages : selectedImages
-      })
+        selectedImages : selectedImages,
+      });
     }
     Dimensions.addEventListener("change", function (dimensions) {
       let height = dimensions.window.height;
@@ -108,7 +108,7 @@ export default class App extends Component {
       });
     } else {
       //remove image from selected images list
-      var retrievedImages = this.state.selectedImages.filter(imageAdded => imageAdded.index !== image.index);
+      var retrievedImages = this.state.selectedImages.filter(imageAdded => imageAdded.node.image.uri !== image.node.image.uri);
       this.setState({
         selectedImages: retrievedImages,
       });
@@ -119,18 +119,18 @@ export default class App extends Component {
     this.props.navigation.navigate('SelectPhotos', {'alreadySelectedImages': this.state.selectedImages});
   }
 
-  isSelected(index) {
+  isSelected(image) {
     let selected = false;
     if (this.state.selectedImages.length === 0) {
       return false;
     } else {
-      this.state.selectedImages.forEach((imageObj) => {if (imageObj.index === index)  selected = true;});
+      this.state.selectedImages.forEach((imageObj) => {if (imageObj.node.image.uri === image.node.image.uri)  selected = true;});
     }
     return selected;
   }
 
   goToCamera() {
-      this.props.navigation.navigate('Camera');
+      this.props.navigation.navigate('Camera', {'alreadySelectedImages': this.state.selectedImages});
   }
 
   scrollFetchImages() {
@@ -146,8 +146,8 @@ export default class App extends Component {
     }
   }
 
-  removeImage(index) {
-    var retrievedImages = this.state.selectedImages.filter(imageAdded => imageAdded.index !== index);
+  removeImage(image) {
+    var retrievedImages = this.state.selectedImages.filter(imageAdded => imageAdded.node.image.uri !== image.node.image.uri);
     this.setState({
       selectedImages: retrievedImages,
     });
@@ -161,12 +161,13 @@ export default class App extends Component {
             <Icon type="FontAwesome" name="camera" />
           </TouchableOpacity>
         </View>
+        <Text>{JSON.stringify(this.state.tempImages)}</Text>
         <View style={{flexDirection: 'row',marginTop: 15}}>
           {this.state.selectedImages.map((imageObj,index) => {
             return (<View key={index} style={{marginRight: 5}}>
                       <Image style={{width: 50, height: 70}} source={{uri: imageObj.node.image.uri }} />
                       {!this.state.showPhotoBlock ?
-                        <TouchableOpacity onPress={() => this.removeImage(imageObj.index)}
+                        <TouchableOpacity onPress={() => this.removeImage(imageObj)}
                           style={{alignSelf: 'flex-end',position: 'absolute', top: -10,right: -5}}>
                           <Text style={{fontSize: 18}}>X</Text>
                         </TouchableOpacity>
@@ -195,7 +196,7 @@ export default class App extends Component {
 
                   <View style={[styles.imagesDisplay,{height: this.state.imagesDisplayHeight}]}>
                     {this.state.images.map((p, i) => {
-                      return (<ImageBlock index={i} selected={this.isSelected} onClickImage={this.onClickImage} key={i} style={[styles.imgOption, {height: this.state.imagesHeight}]} image={p} />)
+                      return (<ImageBlock index={i} selected={() => this.isSelected(p)} onClickImage={this.onClickImage} key={i} style={[styles.imgOption, {height: this.state.imagesHeight}]} image={p} />)
                     })}
                   </View>
                 </ScrollView>

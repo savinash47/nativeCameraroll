@@ -45,9 +45,9 @@ export default class SelectPhotos extends Component {
       });
     } else {
       //remove image from selected images list
-      var removedImages = this.state.selectedImages.filter(imageAdded => imageAdded.node.uri !== image.node.uri);
+      var retrievedImages = this.state.selectedImages.filter(imageAdded => imageAdded.node.image.uri !== image.node.image.uri);
       this.setState({
-        selectedImages: removedImages
+        selectedImages: retrievedImages,
       });
     }
   }
@@ -60,12 +60,12 @@ export default class SelectPhotos extends Component {
     this.props.navigation.navigate('App', {'selectedImages': this.state.selectedImages});
   }
 
-  isSelected(index) {
+  isSelected(image) {
     let selected = false;
     if (this.state.selectedImages.length === 0) {
       return false;
     } else {
-      this.state.selectedImages.forEach((imageObj) => {if (imageObj.index === index)  selected = true;});
+      this.state.selectedImages.forEach((imageObj) => {if (imageObj.node.image.uri === image.node.image.uri)  selected = true;});
     }
     return selected;
   }
@@ -98,7 +98,7 @@ export default class SelectPhotos extends Component {
         </View>
         <ScrollView contentContainerStyle={styles.selectPhotosContainer} onMomentumScrollEnd={this.scrollFetchImages}>
           {this.state.images.map((p, i) => {
-            return (<ImageBlock index={i} selected={this.isSelected} onClickImage={this.onClickImage} key={i} style={styles.imgOption} image={p} />)
+            return (<ImageBlock index={i} selected={() => this.isSelected(p)} onClickImage={this.onClickImage} key={i} style={styles.imgOption} image={p} />)
           })}
         </ScrollView>
       </View>

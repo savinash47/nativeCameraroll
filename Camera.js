@@ -25,6 +25,7 @@ export default class Camera extends Component {
       showFlashOptions: false,
       type: RNCamera.Constants.Type.back
     }
+    this.alreadySelectedImages = this.props.navigation.state.params.alreadySelectedImages;
     this.goBack = this.goBack.bind(this);
     this.selectFlashMode = this.selectFlashMode.bind(this);
     this.showFlashOptionsBlock = this.showFlashOptionsBlock.bind(this);
@@ -36,7 +37,7 @@ export default class Camera extends Component {
       const options = { quality: 0.5, base64: true };
       const data = await this.camera.takePictureAsync(options)
       console.log(data.uri);
-      this.props.navigation.navigate('CameraPreview', {'imageData': data});
+      this.props.navigation.navigate('CameraPreview', {'imageData': data, 'alreadySelectedImages': this.alreadySelectedImages});
     }
   };
 

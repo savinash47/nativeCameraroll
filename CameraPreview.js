@@ -14,12 +14,12 @@ export default class CameraPreview extends Component {
     this.navigation = this.props.navigation;
     this.goBack = this.goBack.bind(this);
     this.acceptImage = this.acceptImage.bind(this);
+    this.alreadySelectedImages = this.props.navigation.state.params.alreadySelectedImages;
   }
 
   goBack() {
     this.props.navigation.goBack();
   }
-
 
   acceptImage() {
     let imageObj = {
@@ -27,7 +27,7 @@ export default class CameraPreview extends Component {
         image: this.image
       }
     };
-    this.navigation.navigate('App', {'selectedImages': [imageObj]});
+    this.navigation.navigate('App', {'selectedImages': [...this.alreadySelectedImages,imageObj]});
   }
 
   render() {
