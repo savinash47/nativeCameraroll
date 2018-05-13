@@ -41,7 +41,6 @@ export default class CameraPreview extends Component {
               <Icon style={styles.doneBtn} type="MaterialIcons" name="check" />
           </TouchableOpacity>
         </View>
-          <Text>{JSON.stringify(this.image)}</Text>
         <Image style={{width: '100%', height: '100%'}} source={{uri: this.image.uri}} />
       </View>
     );
