@@ -1,4 +1,4 @@
-# react-native-camera-photos-access-example
+# react native camera photos access example
 
 - This project shows an example of how one can use camera and photos in react native apps.
 
